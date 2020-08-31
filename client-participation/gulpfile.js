@@ -243,6 +243,10 @@ gulp.task('embedJs', function() {
   .pipe(gulp.dest(destRootBase));
 });
 
+gulp.task('notificationServiceWorker', function() {
+  return gulp.src(['api/service-worker.js']).pipe(gulp.dest(destRootBase));
+});
+
 gulp.task('index', [
   'sparklines',
 ], function() {
@@ -618,6 +622,7 @@ gulp.task('common', [
   "fontawesome",
   "index",
   "embedJs",
+  "notificationServiceWorker"
   ], function() {
     showDesktopNotification("BUILD UPDATED", "woohoo");
 });
@@ -956,6 +961,22 @@ function deploy(uploader) {
       logStatement: function(file) {
         console.log("upload path cached_embedJs_"+embedJsCacheSeconds+" /embedPreprod.js");
         return "/embedPreprod.js";
+      },
+      subdir: null,
+    }));
+
+    // service-worker.js
+    var serviceWorkerCacheSeconds = 60;
+    promises.push(deployBatch({
+      srcKeep: destRootBase + '/**/service-worker.js',
+      headers: {
+        'x-amz-acl': 'public-read',
+        'Content-Type': 'application/javascript',
+        'Cache-Control': 'no-cache'.replace(/MAX_AGE/g, serviceWorkerCacheSeconds),
+      },
+      logStatement:  function(file) {
+        console.log("upload path cached_serviceWorker_"+serviceWorkerCacheSeconds+" /service-worker.js");
+        return "/service-worker.js";
       },
       subdir: null,
     }));
