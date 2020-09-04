@@ -3487,7 +3487,7 @@ Email verified! You can close this tab or hit the back button.
                   return set_last_notified(uid, zid);
                 });
               } else {
-                return sendNotificationWebPush(uid, url, conversation_id, how_to_reach_user[uid], item.remaining).then(() => {
+                return sendNotificationWebPush(uid, url, conversation_id, how_to_reach_user[uid], item.remaining , conv).then(() => {
                   return set_last_notified(uid, zid);
                 })
                 .catch((err) => {
@@ -3531,13 +3531,17 @@ Email verified! You can close this tab or hit the back button.
       setTimeout(doNotificationLoop, 10000);
     });
   }
-  
-  function sendNotificationWebPush(uid, url, conversation_id, endpoint, remaining) {
+  function getNotificationdata( uid , conversation_id , conversation){
+    //TODO: Righ title, right language....
+    return {
+      url : '/' + conversation_id ,
+      body : conversation.topic + ' has new votes!'
+    }
+  }
+  function sendNotificationWebPush(uid, url, conversation_id, endpoint, remaining , conversation) {
     webpush.setVapidDetails('mailto:'+POLIS_FROM_ADDRESS, WEBPUSH_PUBLIC_KEY , WEBPUSH_PRIVATE_KEY);
     let subscription = JSON.parse( endpoint );
-    let dataToSend = {
-      url : '/' + conversation_id ,
-    };
+    let dataToSend = getNotificationdata( uid , conversation_id , conversation);
     return webpush.sendNotification(subscription, JSON.stringify(dataToSend) );
   }
   
