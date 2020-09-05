@@ -10,7 +10,7 @@ import {
 } from '../../actions'
 import ComponentHelpers from '../../util/component-helpers'
 import NoPermission from './no-permission'
-import { Heading, Box, Flex, Text, jsx } from 'theme-ui'
+import { Heading, Box, Flex, Text, jsx, Label } from 'theme-ui'
 import emoji from 'react-easy-emoji'
 
 import ModerateCommentsSeed from './seed-comment'
@@ -36,13 +36,13 @@ class ConversationConfig extends React.Component {
     return value ? t : f
   }
 
-  handleIntegerBoolValueChange(field , f=0, t=1) {
+  handleIntegerBoolValueChange(field , f=0, t=1, element = field) {
     return () => {
       this.props.dispatch(
         handleZidMetadataUpdate(
           this.props.zid_metadata,
           field,
-          this.transformBoolToInt(this[field].checked , f , t)
+          this.transformBoolToInt(this[element].checked , f , t)
         )
       )
     }
@@ -58,6 +58,14 @@ class ConversationConfig extends React.Component {
       }
       this.props.dispatch(
         handleZidMetadataUpdate(this.props.zid_metadata, field, val)
+      )
+    }
+  }
+
+  handleRadioValueChange(field) {
+    return e => {
+      this.props.dispatch(
+        handleZidMetadataUpdate(this.props.zid_metadata, field, e.target.value)
       )
     }
   }
@@ -171,6 +179,7 @@ class ConversationConfig extends React.Component {
               type="checkbox"
               label="Visualization"
               data-test-id="vis_type"
+              id="vis_type"
               ref={c => (this.vis_type = c)}
               checked={this.props.zid_metadata.vis_type === 1}
               onChange={this.handleIntegerBoolValueChange('vis_type').bind(
@@ -179,7 +188,7 @@ class ConversationConfig extends React.Component {
             />
           </Box>
           <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
-            <Text>Participants can see the visualization</Text>
+            <Label htmlFor="vis_type">Participants can see the visualization</Label>
           </Box>
         </Flex>
 
@@ -189,6 +198,7 @@ class ConversationConfig extends React.Component {
               type="checkbox"
               label="Comment form"
               data-test-id="write_type"
+              id="write_type"
               ref={c => (this.write_type = c)}
               checked={this.props.zid_metadata.write_type === 1}
               onChange={this.handleIntegerBoolValueChange('write_type').bind(
@@ -197,7 +207,7 @@ class ConversationConfig extends React.Component {
             />
           </Box>
           <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
-            <Text>Participants can submit comments</Text>
+            <Label htmlFor="write_type">Participants can submit comments</Label>
           </Box>
         </Flex>
 
@@ -207,6 +217,7 @@ class ConversationConfig extends React.Component {
               type="checkbox"
               label="Help text"
               data-test-id="help_type"
+              id="help_type"
               ref={c => (this.help_type = c)}
               checked={this.props.zid_metadata.help_type === 1}
               onChange={this.handleIntegerBoolValueChange('help_type').bind(
@@ -215,64 +226,24 @@ class ConversationConfig extends React.Component {
             />
           </Box>
           <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
-            <Text>Show explanation text above voting and visualization</Text>
+            <Label htmlFor="help_type">Show explanation text above voting and visualization</Label>
           </Box>
         </Flex>
-
-        <Flex sx={{ alignItems: 'flex-start', mb: [3] }}>
-          <Box sx={{ flexShrink: 0, position: 'relative', top: -0.5 }}>
-            <input
-              type="checkbox"
-              label="Prompt participants to subscribe to updates by email"
-              data-test-id="subscribe_type"
-              ref={c => (this.subscribe_type = c)}
-              checked={this.props.zid_metadata.subscribe_type === 1}
-              onChange={this.handleIntegerBoolValueChange('subscribe_type' , 0 , 1).bind(this)}
-            />
-          </Box>
-          <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
-            <Text>
-              Prompt participants to subscribe to updates. A prompt is shown to
-              users once they finish voting on all available comments. If
-              enabled, participants may optionally provide their email address
-              to receive notifications when there are new comments to vote on.
-            </Text>
-          </Box>
-        </Flex>
-
-        <Flex sx={{ alignItems: 'flex-start', mb: [3] }}>
-          <Box sx={{ flexShrink: 0, position: 'relative', top: -0.5 }}>
-            <input
-              type="checkbox"
-              label="Prompt participants to subscribe to updates in browser"
-              ref={c => (this.subscribe_type = c)}
-              checked={this.props.zid_metadata.subscribe_type === 2}
-              onChange={this.handleIntegerBoolValueChange('subscribe_type' , 0 , 2).bind(this)}
-            />
-          </Box>
-          <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
-            <Text>
-              Prompt participants to subscribe to updates by getting 
-              browser notification when there are new comments to vote on.
-              A prompt is shown to users once they finish voting on all 
-              available comments. 
-            </Text>
-          </Box>
-        </Flex>
-
+        
         <Flex sx={{ alignItems: 'flex-start', mb: [3] }}>
           <Box sx={{ flexShrink: 0, position: 'relative', top: -0.5 }}>
             <input
               type="checkbox"
               label="Facebook login prompt"
               data-test-id="auth_opt_fb"
+              id="auth_opt_fb"
               ref={c => (this.auth_opt_fb = c)}
               checked={this.props.zid_metadata.auth_opt_fb}
               onChange={this.handleBoolValueChange('auth_opt_fb').bind(this)}
             />
           </Box>
           <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
-            <Text>Show Facebook login prompt</Text>
+            <Label htmlFor="auth_opt_fb">Show Facebook login prompt</Label>
           </Box>
         </Flex>
 
@@ -282,13 +253,90 @@ class ConversationConfig extends React.Component {
               type="checkbox"
               label="Twitter login prompt"
               data-test-id="auth_opt_tw"
+              id="auth_opt_tw"
               ref={c => (this.auth_opt_tw = c)}
               checked={this.props.zid_metadata.auth_opt_tw}
               onChange={this.handleBoolValueChange('auth_opt_tw').bind(this)}
             />
           </Box>
           <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
-            <Text>Show Twitter login prompt</Text>
+            <Label htmlFor="auth_opt_tw">Show Twitter login prompt</Label>
+          </Box>
+        </Flex>
+
+        <Heading
+          as="h6"
+          sx={{
+            fontSize: [1, null, 2],
+            lineHeight: 'body',
+            my: [3, null, 4]
+          }}>
+          Prompt for notification subscription
+        </Heading>
+
+        <Flex sx={{ alignItems: 'flex-start', mb: [3] }}>
+          <Box>
+            <Text>
+              Prompt participants to subscribe to updates. A prompt is shown to
+              users once they finish voting on all available comments. If
+              enabled, participants may optionally provide their email address
+              or enable browser push notifications to receive a message when
+              there are new comments to vote on.
+            </Text>
+          </Box>
+        </Flex>
+
+        <Flex sx={{ alignItems: 'flex-start', mb: [3] }}>
+          <Box sx={{ flexShrink: 0, position: 'relative', top: -0.5 }}>
+            <input
+              type="radio"
+              label="Do not prompt participants to subscribe"
+              id="subscribe_type_r0"
+              value="0"
+              checked={this.props.zid_metadata.subscribe_type === 0}
+              onChange={this.handleRadioValueChange('subscribe_type').bind(this)}
+            />
+          </Box>
+          <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
+            <Label htmlFor="subscribe_type_r0">
+              No prompt
+            </Label>
+          </Box>
+        </Flex>
+
+        <Flex sx={{ alignItems: 'flex-start', mb: [3] }}>
+          <Box sx={{ flexShrink: 0, position: 'relative', top: -0.5 }}>
+            <input
+              type="radio"
+              label="Prompt participants to subscribe to updates by email"
+              id="subscribe_type_r1"
+              value="1"
+              checked={this.props.zid_metadata.subscribe_type === 1}
+              onChange={this.handleRadioValueChange('subscribe_type').bind(this)}
+            />
+          </Box>
+          <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
+            <Label htmlFor="subscribe_type_r1">
+              Email notifications prompt
+            </Label>
+          </Box>
+        </Flex>
+
+        <Flex sx={{ alignItems: 'flex-start', mb: [3] }}>
+          <Box sx={{ flexShrink: 0, position: 'relative', top: -0.5 }}>
+            <input
+              type="radio"
+              label="Prompt participants to subscribe to updates in browser"
+              id="subscribe_type_r2"
+              value="2"
+              checked={this.props.zid_metadata.subscribe_type === 2}
+              onChange={this.handleRadioValueChange('subscribe_type').bind(this)}
+            />
+          </Box>
+          <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
+            <Label htmlFor="subscribe_type_r2">
+              Browser notifications prompt
+            </Label>
           </Box>
         </Flex>
 
@@ -307,6 +355,7 @@ class ConversationConfig extends React.Component {
             <input
               type="checkbox"
               data-test-id="strict_moderation"
+              id="strict_moderation"
               ref={c => (this.strict_moderation = c)}
               checked={this.props.zid_metadata.strict_moderation}
               onChange={this.handleBoolValueChange('strict_moderation').bind(
@@ -315,7 +364,7 @@ class ConversationConfig extends React.Component {
             />
           </Box>
           <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
-            <Text>No comments shown without moderator approval</Text>
+            <Label htmlFor="strict_moderation">No comments shown without moderator approval</Label>
           </Box>
         </Flex>
 
@@ -325,6 +374,7 @@ class ConversationConfig extends React.Component {
               type="checkbox"
               label="Require Auth to Comment"
               data-test-id="auth_needed_to_write"
+              id="auth_needed_to_write"
               ref={c => (this.auth_needed_to_write = c)}
               checked={this.props.zid_metadata.auth_needed_to_write}
               onChange={this.handleBoolValueChange('auth_needed_to_write').bind(
@@ -333,10 +383,10 @@ class ConversationConfig extends React.Component {
             />
           </Box>
           <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
-            <Text>
+            <Label htmlFor="auth_needed_to_write">
               Participants cannot submit comments without first connecting
               either Facebook or Twitter
-            </Text>
+            </Label>
           </Box>
         </Flex>
 
@@ -346,6 +396,7 @@ class ConversationConfig extends React.Component {
               type="checkbox"
               label="Require Auth to Vote"
               data-test-id="auth_needed_to_vote"
+              id="auth_needed_to_vote"
               ref={c => (this.auth_needed_to_vote = c)}
               checked={this.props.zid_metadata.auth_needed_to_vote}
               onChange={this.handleBoolValueChange('auth_needed_to_vote').bind(
@@ -354,10 +405,10 @@ class ConversationConfig extends React.Component {
             />
           </Box>
           <Box sx={{ ml: [2], flexShrink: 0, maxWidth: '35em' }}>
-            <Text>
+            <Label htmlFor="auth_needed_to_vote">
               Participants cannot vote without first connecting either Facebook
               or Twitter
-            </Text>
+            </Label>
           </Box>
         </Flex>
       </Box>
