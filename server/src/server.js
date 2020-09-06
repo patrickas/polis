@@ -78,6 +78,8 @@ const Conversation = require('./conversation');
 const Session = require('./session');
 const Comment = require('./comment');
 const Utils = require('./utils/common');
+const Translator = require('./translator');
+const detectLanguage = Translator.detectLanguage;
 const SQL = require('./db/sql');
 // End of re-import
 
@@ -576,8 +578,6 @@ function initializePolisHelpers() {
         return doInsert();
       });
   }
-
-  const detectLanguage = Comment.detectLanguage;
 
   if (isTrue(process.env.BACKFILL_COMMENT_LANG_DETECTION)) {
     pgQueryP("select tid, txt, zid from comments where lang is null;", []).then((comments) => {
@@ -1891,7 +1891,7 @@ function initializePolisHelpers() {
       let bids = pids.map(findBidForPid);
       let pidToBid = _.object(pids, bids);
       return pidToBid;
-    });
+    })
   }
 
   // function getClusters(zid, math_tick) {
@@ -3047,9 +3047,9 @@ Thank you for using Polis`;
 
   function isEmailVerified(email) {
     return true;
-//    return pg.queryP("select * from email_validations where email = ($1);", [email]).then(function(rows) {
-//      return rows.length > 0;
-//    });
+    // return pgQueryP("select * from email_validations where email = ($1);", [email]).then(function (rows) {
+    //   return rows.length > 0;
+    // });
   }
 
   function handle_GET_verification(req, res) {
@@ -7161,6 +7161,7 @@ Email verified! You can close this tab or hit the back button.
               fail(res, 500, "polis_err_update_conversation", err);
               return;
             }
+            Conversation.deleteConversationTranslations(req.p.zid); // Delete stale conversation translations since topic and description might have changed
             let conv = result && result.rows && result.rows[0];
             // The first check with isModerator implictly tells us this can be returned in HTTP response.
             conv.is_mod = true;
@@ -7609,33 +7610,13 @@ Email verified! You can close this tab or hit the back button.
     });
   }
 
-  function getConversationTranslations(zid, lang) {
-    const firstTwoCharsOfLang = lang.substr(0,2);
-    return pgQueryP("select * from conversation_translations where zid = ($1) and lang = ($2);", [zid, firstTwoCharsOfLang]);
-  }
-
-  function getConversationTranslationsMinimal(zid, lang) {
-    if (!lang) {
-      return Promise.resolve([]);
-    }
-    return getConversationTranslations(zid, lang).then(function(rows) {
-      for (let i = 0; i < rows.length; i++) {
-        delete rows[i].zid;
-        delete rows[i].created;
-        delete rows[i].modified;
-        delete rows[i].src;
-      }
-      return rows;
-    });
-  }
-
   function getOneConversation(zid, uid, lang) {
 
     return Promise.all([
       pgQueryP_readOnly("select * from conversations left join  (select uid, site_id, plan from users) as u on conversations.owner = u.uid where conversations.zid = ($1);", [zid]),
       getConversationHasMetadata(zid),
       (_.isUndefined(uid) ? Promise.resolve({}) : getUserInfoForUid2(uid)),
-      getConversationTranslationsMinimal(zid, lang),
+      Conversation.getConversationTranslationsMinimal(zid, lang),
     ]).then(function(results) {
       let conv = results[0] && results[0][0];
       let convHasMetadata = results[1];
